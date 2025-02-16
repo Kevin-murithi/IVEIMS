@@ -13,7 +13,7 @@ const generateToken = (user, res) => {
         { expiresIn: '1h' }
     );
 
-    console.log(token); // Debugging, remove in production
+    console.log("JWT: ", token); // Debugging, remove in production
 
     res.cookie('token', token, {
         httpOnly: true,
@@ -28,7 +28,6 @@ const generateToken = (user, res) => {
 // **Register User**
 exports.register = (req, res) => {
     const { name, email, password, role } = req.body;
-    console.log(name, email, password, role);
 
     if (!name || !email || !password) {
         return res.status(400).json({ message: 'Name, email, and password are required' });
@@ -49,6 +48,17 @@ exports.register = (req, res) => {
             db.query(sql, [name, email, hashedPassword, assignedRole, isApproved], (err, result) => {
                 if (err) return res.status(500).json({ message: 'Error registering user' });
 
+                const newUser = {
+                    id: result.insertId,
+                    name,
+                    email,
+                    role: assignedRole,
+                    approved: isApproved
+                };
+
+                // Generate JWT and store it in cookies
+                generateToken(newUser, res);
+
                 // Send email notification
                 sendEmail(email, 
                     'IvE IMS Registration Successful', 
@@ -58,12 +68,13 @@ exports.register = (req, res) => {
 
                 res.status(201).json({ 
                     message: 'Registration successful, awaiting admin approval.', 
-                    role: assignedRole 
+                    user: newUser
                 });
             });
         });
     });
 };
+
 
 // **Login User**
 exports.login = (req, res) => {
@@ -90,7 +101,7 @@ exports.login = (req, res) => {
             // Generate token and store in cookie
             generateToken(user, res);
 
-            res.json({ message: 'Login successful', redirect: `/api/dashboard/${user.role}` });
+            res.json({ message: 'Login successful for user: ', user});
         });
     });
 };
