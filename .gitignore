@@ -1,2 +1,3 @@
 .env
-/nodemodules 
+/node_modules 
+prompts.txt
