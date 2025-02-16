@@ -1,11 +1,34 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db.js');
-
 const sendEmail = require('../config/emailService.js');
+const dotenv = require('dotenv');
+dotenv.config();
 
+// Function to generate and store token in cookies
+const generateToken = (user, res) => {
+    const token = jwt.sign(
+        { id: user.id, name: user.name, email: user.email, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+    );
+
+    console.log(token); // Debugging, remove in production
+
+    res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Secure in production
+        sameSite: 'Strict',
+        maxAge: 3600000 // 1 hour
+    });
+
+    return token;
+};
+
+// **Register User**
 exports.register = (req, res) => {
     const { name, email, password, role } = req.body;
+    console.log(name, email, password, role);
 
     if (!name || !email || !password) {
         return res.status(400).json({ message: 'Name, email, and password are required' });
@@ -42,6 +65,7 @@ exports.register = (req, res) => {
     });
 };
 
+// **Login User**
 exports.login = (req, res) => {
     const { email, password } = req.body;
 
@@ -63,16 +87,15 @@ exports.login = (req, res) => {
                 return res.status(403).json({ message: 'Your account is pending approval from an admin.' });
             }
 
-            const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-            console.log(token)
-
-            req.session.user = { id: user.id, name: user.name, email: user.email, role: user.role, token };
+            // Generate token and store in cookie
+            generateToken(user, res);
 
             res.json({ message: 'Login successful', redirect: `/api/dashboard/${user.role}` });
         });
     });
 };
 
+// **Check Authentication Status**
 exports.checkAuthStatus = (req, res) => {
     if (!req.user) {
         return res.status(401).json({ message: 'Not authenticated' });
@@ -89,5 +112,12 @@ exports.checkAuthStatus = (req, res) => {
     });
 };
 
+// **Logout User**
+exports.logout = (req, res) => {
+    res.cookie('token', '', { 
+        httpOnly: true, 
+        expires: new Date(0) // Expire the cookie
+    });
 
-
+    res.json({ message: 'Logged out successfully' });
+};

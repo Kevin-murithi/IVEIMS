@@ -1,69 +1,60 @@
 const express = require('express');
-const { register, login } = require('../controllers/authController');
-const router = express.Router();
-const {authenticateUser, authorizeRole} = require ('../middleware/authMiddleware.js');
-const { checkAuthStatus } = require('../controllers/authController');
-
+const { register, login, checkAuthStatus } = require('../controllers/authController');
+const { authMiddleware } = require('../middleware/authMiddleware.js');
 const db = require('../config/db.js');
 const sendEmail = require('../config/emailService.js');
 
-
+const router = express.Router();
 
 router.post('/register', register);
 router.post('/login', login);
 
-router.get('/admin', authenticateUser, authorizeRole(['admin']), (req, res) => {
-    res.json({ message: 'Welcome Admin!', user: req.session.user });
+router.get('/admin', authMiddleware(['admin']), (req, res) => {
+    res.json({ message: 'Welcome Admin!', user: req.user });
 });
 
-router.get('/technician', authenticateUser, authorizeRole(['technician']), (req, res) => {
-    res.json({ message: 'Welcome Technician!', user: req.session.user });
+router.get('/technician', authMiddleware(['technician']), (req, res) => {
+    res.json({ message: 'Welcome Technician!', user: req.user });
 });
 
-router.get('/student', authenticateUser, authorizeRole(['student']), (req, res) => {
-    res.json({ message: 'Welcome Student!', user: req.session.user });
+router.get('/student', authMiddleware(['student']), (req, res) => {
+    res.json({ message: 'Welcome Student!', user: req.user });
 });
 
-router.get('/lab_manager', authenticateUser, authorizeRole(['lab_manager']), (req, res) => {
-    res.json({ message: 'Welcome Lab Manager!', user: req.session.user });
+router.get('/lab_manager', authMiddleware(['lab_manager']), (req, res) => {
+    res.json({ message: 'Welcome Lab Manager!', user: req.user });
 });
 
-// Get All Pending Users (For Admins)
-router.get('/pending-users', authenticateUser, authorizeRole(['admin']), (req, res) => {
-    console.log("🔍 User Requesting Data:", req.user); // ✅ LOG USER INFO
-
+router.get('/pending-users', authMiddleware(['admin']), (req, res) => {
+    console.log("🔍 User Requesting Data:", req.user);
     const sql = 'SELECT id, name, email, role FROM users WHERE approved = false';
-
+    
     db.query(sql, (err, results) => {
         if (err) {
-            console.error("❌ Database Error:", err); // ✅ LOG DATABASE ERROR
+            console.error("❌ Database Error:", err);
             return res.status(500).json({ message: 'Database error' });
         }
-
-        console.log("✅ Pending Users Found:", results); // ✅ LOG RESULTS
+        
+        console.log("✅ Pending Users Found:", results);
         res.json(results);
     });
 });
 
-
-// Approve a User (For Admins)
-router.post('/approve-user/:id', authenticateUser, authorizeRole(['admin']), (req, res) => {
+router.post('/approve-user/:id', authMiddleware(['admin']), (req, res) => {
     const userId = req.params.id;
-
     console.log(`🔍 Approving User ID: ${userId}`);
-
+    
     const sql = 'UPDATE users SET approved = true WHERE id = ?';
     db.query(sql, [userId], (err, result) => {
         if (err) {
             console.error("❌ Database Error (Update):", err);
             return res.status(500).json({ message: 'Database error' });
         }
-
+        
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'User not found or already approved' });
         }
-
-        // Fetch user email to notify them
+        
         const getUserSql = 'SELECT name, email FROM users WHERE id = ?';
         db.query(getUserSql, [userId], (err, userResult) => {
             if (err) {
@@ -76,8 +67,6 @@ router.post('/approve-user/:id', authenticateUser, authorizeRole(['admin']), (re
             }
 
             const user = userResult[0];
-
-            // Send approval email
             sendEmail(
                 user.email, 
                 'Your IvE IMS Account Has Been Approved', 
@@ -90,9 +79,6 @@ router.post('/approve-user/:id', authenticateUser, authorizeRole(['admin']), (re
     });
 });
 
-
-// ✅ New Route: Check user login status
-router.get('/status', authenticateUser, checkAuthStatus);
-
+router.get('/status', authMiddleware(), checkAuthStatus);
 
 module.exports = router;
