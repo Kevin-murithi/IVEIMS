@@ -3,6 +3,7 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
+const pageRoutes = require('./routes/pageRoutes');
 const authRoutes = require('./routes/authRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
 const maintenanceRoutes = require('./routes/maintenanceRoutes');
@@ -60,9 +61,10 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(pageRoutes);
+app.use('/api', authRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/inventory', inventoryRoutes);
-app.use('/api', authRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 
 // Setup Cron schedule - Run every day at 9 AM
