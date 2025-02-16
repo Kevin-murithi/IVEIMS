@@ -5,8 +5,8 @@
         POST	/api/auth/login	Log in a user (returns JWT & creates session)
         GET	    /api/auth/logout	Log out user & destroy session
         GET	    /api/auth/status	Check user login status
-        GET	    /api/auth/pending-users	Get all unapproved users (Admin only)
-        PATCH	/api/auth/approve/:userId	Approve a user (Admin only)
+        GET	    /api/pending-users	Get all unapproved users (Admin only)
+        PATCH	/api/approve/:userId	Approve a user (Admin only)
 
 2️⃣ Equipment & Inventory Management
 
