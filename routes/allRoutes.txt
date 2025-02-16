@@ -1,0 +1,40 @@
+1️⃣ User Authentication & Access Control
+
+        Method	Endpoint	Description
+        POST	/api/auth/register	Register a new user (first user becomes admin)
+        POST	/api/auth/login	Log in a user (returns JWT & creates session)
+        GET	    /api/auth/logout	Log out user & destroy session
+        GET	    /api/auth/status	Check user login status
+        GET	    /api/auth/pending-users	Get all unapproved users (Admin only)
+        PATCH	/api/auth/approve/:userId	Approve a user (Admin only)
+
+2️⃣ Equipment & Inventory Management
+
+        Method	Endpoint	Description
+        GET	    /api/inventory/all	        Get all equipment & tools
+        POST	/api/inventory/add	        Add new equipment (Admin only)
+        GET	    /api/inventory/:id	        Get details of a specific equipment
+        PATCH	/api/inventory/update/:id	Update equipment details
+        DELETE	/api/inventory/delete/:id	Remove equipment from system
+
+3️⃣ Maintenance Scheduling
+
+        Method	Endpoint	Description
+        GET	/api/maintenance/all	        Get all scheduled maintenance
+        GET	/api/maintenance/due	        Get all overdue maintenance
+        GET	/api/maintenance/reminders	    Get all logged maintenance reminders
+        GET	/api/maintenance/:id	        Get maintenance history for a specific equipment
+        POST	/api/maintenance/log-reminders	Log maintenance reminders into database
+        PATCH	/api/maintenance/complete/:id	Mark a maintenance task as completed
+
+4️⃣ Asset Sharing Between Labs
+
+        Method	Endpoint	            Description
+        POST	/api/assets/transfer	Transfer an asset between labs
+        GET	    /api/assets/transfers/:equipmentId	Get asset transfer history
+
+5️⃣ User & Role Management
+        Method	Endpoint	Description
+        GET 	/api/users/all	        Get all users (Admin only)
+        PATCH	/api/users/role/:userId	Change user role (Admin only)
+        DELETE	/api/users/delete/:userId	Remove a user from system
