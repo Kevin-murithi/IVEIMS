@@ -1,0 +1,26 @@
+// Flexbox Mixin
+@mixin flex($direction: row, $justify: flex-start, $align: stretch) {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+}
+
+// Grid Mixin
+@mixin grid($columns: 12, $gap: 20px) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: $gap;
+}
+
+// Font Settings
+@mixin fontSettings($size: 16px, $weight: normal, $color: $text-color) {
+  font-size: $size;
+  font-weight: $weight;
+  color: $color;
+}
+
+// Box Shadow
+@mixin boxShadow($shadow: 0px 4px 10px rgba(0, 0, 0, 0.1)) {
+  box-shadow: $shadow;
+}
