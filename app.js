@@ -8,6 +8,9 @@ const authRoutes = require('./routes/authRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
 const maintenanceRoutes = require('./routes/maintenanceRoutes');
 const assetRoutes = require('./routes/assetRoutes');
+const projectRoutes = require('./routes/projectRoutes'); // ✅ Add Project Routes
+const reservationRoutes = require('./routes/reservationRoutes');
+const documentationRoutes = require('./routes/documentationRoutes');
 const cron = require('node-cron');
 const { sendMaintenanceReminders } = require('./controllers/maintenanceController');
 
@@ -36,4 +39,8 @@ app.use('/api/assets', assetRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api', authRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/projects', projectRoutes); // ✅ Register Project Routes
+app.use('/api/reservations', reservationRoutes); // ✅ Register Reservation Routes
+app.use('/api/documentation', documentationRoutes);
+app.use('/uploads', express.static('uploads')); // Serve uploaded files
 app.listen(3000, () => console.log('Server running on port 3000'));

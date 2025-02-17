@@ -38,3 +38,61 @@ CREATE TABLE asset_transfers (
     transfer_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (equipment_id) REFERENCES equipment(id) ON DELETE CASCADE
 );
+
+CREATE TABLE projects (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    status ENUM('pending', 'active', 'completed') DEFAULT 'pending',
+    start_date DATE,
+    end_date DATE,
+    owner_id INT NOT NULL,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE reservations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    equipment_id INT NOT NULL,
+    project_id INT NOT NULL,
+    reserved_by INT NOT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    FOREIGN KEY (equipment_id) REFERENCES equipment(id) ON DELETE CASCADE,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    FOREIGN KEY (reserved_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE project_files (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    project_id INT NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    uploaded_by INT NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE project_files (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    project_id INT NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    uploaded_by INT NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE timeslots (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    equipment_id INT NOT NULL, -- Replacing resource_id with equipment_id
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (equipment_id) REFERENCES equipment(id) -- Assuming an 'equipment' table exists
+);
+

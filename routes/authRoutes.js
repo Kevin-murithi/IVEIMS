@@ -7,8 +7,6 @@ const { checkAuthStatus } = require('../controllers/authController');
 const db = require('../config/db.js');
 const sendEmail = require('../config/emailService.js');
 
-
-
 router.post('/register', register);
 router.post('/login', login);
 
