@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const dotenv = require('dotenv');
+dotenv.config();
 
+<<<<<<< HEAD
 exports.authenticateUser = (req, res, next) => {
     console.log("🔍 Received Headers:", req.headers); // ✅ LOG ALL HEADERS
 
@@ -28,10 +30,34 @@ exports.authenticateUser = (req, res, next) => {
 };
 
 exports.authorizeRole = (roles) => {
+=======
+// Unified authentication and authorization middleware
+exports.authMiddleware = (roles = []) => {
+>>>>>>> 7674b29ab887fdce219605beae2e5085b0bead7c
     return (req, res, next) => {
-        if (!req.session.user || !roles.includes(req.session.user.role)) {
-            return res.status(403).json({ message: 'Forbidden: Access denied' });
+        console.log("🔍 Received Cookies:", req.cookies); // ✅ LOG COOKIES
+
+        const token = req.cookies.token;
+        console.log("🔍 Extracted Token:", token || "❌ No Token Found"); // ✅ LOG TOKEN
+
+        if (!token) {
+            return res.status(401).json({ message: 'Access denied. No token provided.' });
         }
-        next();
+
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            req.user = decoded; // ✅ Attach user info to request
+            console.log("✅ Decoded Token:", decoded); // ✅ LOG USER INFO
+
+            // Check if role-based authorization is required
+            if (roles.length && !roles.includes(decoded.role)) {
+                return res.status(403).json({ message: 'Forbidden: Access denied' });
+            }
+
+            next();
+        } catch (err) {
+            console.error("❌ Token Verification Error:", err.message);
+            return res.status(401).json({ message: 'Invalid or expired token' });
+        }
     };
 };

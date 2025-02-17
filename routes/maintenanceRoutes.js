@@ -1,28 +1,25 @@
 const express = require('express');
-const { authenticateUser, authorizeRole } = require('../middleware/authMiddleware');
-const { scheduleMaintenance } = require('../controllers/maintenanceController');
-const { getAllMaintenance, getDueForMaintenance, getMaintenanceById, logMaintenanceReminder, getMaintenanceReminders } = require('../controllers/maintenanceController');
+const { authMiddleware } = require('../middleware/authMiddleware');
+const { scheduleMaintenance, getAllMaintenance, getDueForMaintenance, getMaintenanceById, logMaintenanceReminder, getMaintenanceReminders } = require('../controllers/maintenanceController');
 
 const router = express.Router();
 
 // Schedule Maintenance (Admins & Technicians)
-router.post('/schedule/:id', authenticateUser, authorizeRole(['admin', 'technician']), scheduleMaintenance);
+router.post('/schedule/:id', authMiddleware(['admin', 'technician']), scheduleMaintenance);
 
 // Get all maintenance schedules (Admins & Technicians)
-router.get('/all', authenticateUser, getAllMaintenance);
+router.get('/all', authMiddleware(['admin', 'technician']), getAllMaintenance);
 
 // Get overdue maintenance (Admins & Technicians)
-router.get('/due', authenticateUser, getDueForMaintenance);
+router.get('/due', authMiddleware(['admin', 'technician']), getDueForMaintenance);
 
-// Get maintenance history for a specific equipment
-// ✅ FIX: Define `/reminders` BEFORE `/:id`
-router.get('/reminders', authenticateUser, authorizeRole(['admin', 'technician']), getMaintenanceReminders);
+// Get maintenance reminders (Admins & Technicians) - ✅ Placed before `/:id`
+router.get('/reminders', authMiddleware(['admin', 'technician']), getMaintenanceReminders);
 
-// ✅ FIX: Ensure `:id` is handled properly
-router.get('/:id([0-9]+)', authenticateUser, getMaintenanceById);
+// Get maintenance history for a specific equipment (Ensuring ID format is correct)
+router.get('/:id([0-9]+)', authMiddleware(), getMaintenanceById);
 
-// Log maintenance reminder into database
-router.post('/log-reminders', authenticateUser, authorizeRole(['admin', 'technician']), logMaintenanceReminder);
-
+// Log maintenance reminder into database (Admins & Technicians)
+router.post('/log-reminders', authMiddleware(['admin', 'technician']), logMaintenanceReminder);
 
 module.exports = router;

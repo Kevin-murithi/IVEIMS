@@ -1,9 +1,31 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db.js');
-
 const sendEmail = require('../config/emailService.js');
+const dotenv = require('dotenv');
+dotenv.config();
 
+// Function to generate and store token in cookies
+const generateToken = (user, res) => {
+    const token = jwt.sign(
+        { id: user.id, name: user.name, email: user.email, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+    );
+
+    console.log("JWT: ", token); // Debugging, remove in production
+
+    res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Secure in production
+        sameSite: 'Strict',
+        maxAge: 3600000 // 1 hour
+    });
+
+    return token;
+};
+
+// **Register User**
 exports.register = (req, res) => {
     const { name, email, password, role } = req.body;
 
@@ -26,6 +48,17 @@ exports.register = (req, res) => {
             db.query(sql, [name, email, hashedPassword, assignedRole, isApproved], (err, result) => {
                 if (err) return res.status(500).json({ message: 'Error registering user' });
 
+                const newUser = {
+                    id: result.insertId,
+                    name,
+                    email,
+                    role: assignedRole,
+                    approved: isApproved
+                };
+
+                // Generate JWT and store it in cookies
+                generateToken(newUser, res);
+
                 // Send email notification
                 sendEmail(email, 
                     'IvE IMS Registration Successful', 
@@ -35,13 +68,15 @@ exports.register = (req, res) => {
 
                 res.status(201).json({ 
                     message: 'Registration successful, awaiting admin approval.', 
-                    role: assignedRole 
+                    user: newUser
                 });
             });
         });
     });
 };
 
+
+// **Login User**
 exports.login = (req, res) => {
     const { email, password } = req.body;
 
@@ -63,16 +98,15 @@ exports.login = (req, res) => {
                 return res.status(403).json({ message: 'Your account is pending approval from an admin.' });
             }
 
-            const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-            console.log(token)
+            // Generate token and store in cookie
+            generateToken(user, res);
 
-            req.session.user = { id: user.id, name: user.name, email: user.email, role: user.role, token };
-
-            res.json({ message: 'Login successful', redirect: `/api/dashboard/${user.role}` });
+            res.json({ message: 'Login successful for user: ', user});
         });
     });
 };
 
+// **Check Authentication Status**
 exports.checkAuthStatus = (req, res) => {
     if (!req.user) {
         return res.status(401).json({ message: 'Not authenticated' });
@@ -89,5 +123,12 @@ exports.checkAuthStatus = (req, res) => {
     });
 };
 
+// **Logout User**
+exports.logout = (req, res) => {
+    res.cookie('token', '', { 
+        httpOnly: true, 
+        expires: new Date(0) // Expire the cookie
+    });
 
-
+    res.json({ message: 'Logged out successfully' });
+};
