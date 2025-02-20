@@ -1,10 +1,13 @@
 const express = require('express');
-const { authenticateUser } = require('../middleware/authMiddleware');
-const { createReservation, getReservations } = require('../controllers/reservationController');
-
 const router = express.Router();
+const reservationController = require('../controllers/reservationController'); // Correct import
+const { authMiddleware } = require('../middleware/authMiddleware');
 
-router.post('/reserve', authenticateUser, createReservation);
-router.get('/', authenticateUser, getReservations);
+
+// Debugging: Check if `reservationController` is loaded
+console.log("📌 Loaded reservationController:", reservationController);
+
+router.post('/reserve', authMiddleware(), reservationController.createReservation);
+router.get('/reservations', reservationController.getReservations);
 
 module.exports = router;

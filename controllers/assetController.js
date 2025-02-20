@@ -1,5 +1,5 @@
 const Asset = require('../models/asset');
-const Equipment = require('../models/equipment');
+const Equipment = require('../models/equipment.js');
 const db = require('../config/db.js');
 
 

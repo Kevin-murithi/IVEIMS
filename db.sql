@@ -13,11 +13,21 @@ CREATE TABLE equipment (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     lab VARCHAR(100) NOT NULL,  -- Which lab owns this item
-    status ENUM('available', 'in use', 'maintenance') DEFAULT 'available',
-    unique_code VARCHAR(255) UNIQUE NOT NULL, -- For barcode/QR code scanning
+    status ENUM('available', 'in use', 'maintenance', 'damaged') DEFAULT 'available',
+    unique_code VARCHAR(255) UNIQUE NOT NULL, -- Barcode/QR Code scanning
+    current_location VARCHAR(255) NOT NULL, -- Tracks where the item is
     last_maintenance DATE DEFAULT NULL,
     next_maintenance DATE DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE equipment MODIFY COLUMN current_lab VARCHAR(255) DEFAULT 'available';
+
+CREATE TABLE machines (
+    id INT PRIMARY KEY, -- Same ID as equipment
+    power_rating VARCHAR(50), -- e.g., "220V, 3HP"
+    manufacturer VARCHAR(255),
+    FOREIGN KEY (id) REFERENCES equipment(id) ON DELETE CASCADE
 );
 
 CREATE TABLE maintenance_reminders (
@@ -74,17 +84,6 @@ CREATE TABLE project_files (
     FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE project_files (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    project_id INT NOT NULL,
-    file_name VARCHAR(255) NOT NULL,
-    file_path VARCHAR(500) NOT NULL,
-    uploaded_by INT NOT NULL,
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-    FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE
-);
-
 CREATE TABLE timeslots (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -94,5 +93,15 @@ CREATE TABLE timeslots (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (equipment_id) REFERENCES equipment(id) -- Assuming an 'equipment' table exists
+);
+
+CREATE TABLE usage_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    equipment_id INT NOT NULL,
+    user_id INT NOT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    FOREIGN KEY (equipment_id) REFERENCES equipment(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

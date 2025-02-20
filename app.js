@@ -61,14 +61,14 @@ app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
-app.use(bodyParser.json());
-app.use(cookieParser());
-app.use(pageRoutes);
-app.use('/api', authRoutes);
-app.use('/api/assets', assetRoutes);
-app.use('/api/inventory', inventoryRoutes);
-app.use('/api/maintenance', maintenanceRoutes);
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], 
+  credentials: true
+}));
+
+app.use(cookieParser());  // ✅ Make sure this is before routes
+app.use(bodyParser.json()); 
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Setup Cron schedule - Run every day at 9 AM
 cron.schedule('0 9 * * *', () => {
@@ -76,8 +76,12 @@ cron.schedule('0 9 * * *', () => {
     sendMaintenanceReminders();
 });
 
-
-<<<<<<< HEAD
+app.use(pageRoutes);
+app.use('/api', authRoutes);
+app.use('/api/assets', assetRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/reservations', reservationRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api', authRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
@@ -85,7 +89,5 @@ app.use('/api/projects', projectRoutes); // ✅ Register Project Routes
 app.use('/api/reservations', reservationRoutes); // ✅ Register Reservation Routes
 app.use('/api/documentation', documentationRoutes);
 app.use('/uploads', express.static('uploads')); // Serve uploaded files
+
 app.listen(3000, () => console.log('Server running on port 3000'));
-=======
-app.listen(3000, () => console.log('Server running on port 3000'));
->>>>>>> 7674b29ab887fdce219605beae2e5085b0bead7c

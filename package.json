@@ -22,11 +22,8 @@
     "handlebars": "^4.7.8",
     "install": "^0.13.0",
     "jsonwebtoken": "^9.0.2",
-<<<<<<< HEAD
-    "multer": "^1.4.5-lts.1",
-=======
     "morgan": "^1.10.0",
->>>>>>> 7674b29ab887fdce219605beae2e5085b0bead7c
+    "multer": "^1.4.5-lts.1",
     "mysql2": "^3.12.0",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.0"

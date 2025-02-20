@@ -4,7 +4,7 @@ const { uploadFile, getFilesByProject } = require('../controllers/documentationC
 
 const router = express.Router();
 
-router.post('/upload', authenticateUser, uploadFile);
-router.get('/:project_id', authenticateUser, getFilesByProject);
+// router.post('/upload', authenticateUser, uploadFile);
+// router.get('/:project_id', authenticateUser, getFilesByProject);
 
 module.exports = router;

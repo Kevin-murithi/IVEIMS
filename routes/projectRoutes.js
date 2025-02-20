@@ -1,11 +1,11 @@
 const express = require('express');
-const { authenticateUser } = require('../middleware/authMiddleware');
-const { getProjects, createProject, updateProjectStatus } = require('../controllers/projectController');
+const { authMiddleware } = require('../middleware/authMiddleware');
+const projectController = require('../controllers/projectController'); // Ensure this exists
 
 const router = express.Router();
 
-router.get('/', authenticateUser, getProjects);
-router.post('/create', authenticateUser, createProject);
-router.patch('/:id/status', authenticateUser, updateProjectStatus);
+router.get('/', authMiddleware(), projectController.getProjects);
+router.post('/create', authMiddleware(), projectController.createProject);
+router.patch('/:id/status', authMiddleware(), projectController.updateProjectStatus);
 
 module.exports = router;

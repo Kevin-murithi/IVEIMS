@@ -1,6 +1,6 @@
 const express = require('express');
 const { authMiddleware } = require('../middleware/authMiddleware');
-const { addEquipment, getAllEquipment, updateEquipmentStatus, deleteEquipment } = require('../controllers/inventoryController');
+const { addEquipment, getAllEquipment, updateEquipmentStatus, deleteEquipment } = require('../controllers/equipmentController');
 
 const router = express.Router();
 
@@ -14,6 +14,7 @@ router.get('/all', authMiddleware(), getAllEquipment);
 router.put('/update/:id', authMiddleware(['admin', 'technician']), updateEquipmentStatus);
 
 // Delete equipment (Admins only)
-router.delete('/delete/:id', authMiddleware(['admin']), deleteEquipment);
+// router.delete('/delete/:id', authMiddleware(['admin']), deleteEquipment);
 
 module.exports = router;
+

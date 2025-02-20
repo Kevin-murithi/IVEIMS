@@ -4,11 +4,8 @@ const { authMiddleware } = require('../middleware/authMiddleware.js');
 const db = require('../config/db.js');
 const sendEmail = require('../config/emailService.js');
 
-<<<<<<< HEAD
-=======
 const router = express.Router();
 
->>>>>>> 7674b29ab887fdce219605beae2e5085b0bead7c
 router.post('/register', register);
 router.post('/login', login);
 

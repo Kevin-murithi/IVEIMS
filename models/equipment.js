@@ -1,30 +1,36 @@
 const db = require('../config/db');
 
 const Equipment = {
-    addEquipment: (name, lab, uniqueCode, callback) => {
-        const sql = 'INSERT INTO equipment (name, lab, unique_code) VALUES (?, ?, ?)';
-        db.query(sql, [name, lab, uniqueCode], callback);
+    // Add new equipment
+    addEquipment: (name, lab, uniqueCode, currentLab, status, callback) => {
+        const sql = 'INSERT INTO equipment (name, lab, unique_code, current_lab, status) VALUES (?, ?, ?, ?, ?)';
+        db.query(sql, [name, lab, uniqueCode, currentLab, status], callback);
     },
-
+    
+    // Get all equipment
     getAllEquipment: (callback) => {
         const sql = 'SELECT * FROM equipment';
         db.query(sql, callback);
     },
 
+    // Get equipment by ID
     getEquipmentById: (id, callback) => {
         const sql = 'SELECT * FROM equipment WHERE id = ?';
         db.query(sql, [id], callback);
     },
 
+    // Update equipment status
     updateEquipmentStatus: (id, status, callback) => {
         const sql = 'UPDATE equipment SET status = ? WHERE id = ?';
         db.query(sql, [status, id], callback);
     },
 
+    // Delete equipment
     deleteEquipment: (id, callback) => {
         const sql = 'DELETE FROM equipment WHERE id = ?';
         db.query(sql, [id], callback);
     },
+
     // Schedule maintenance
     scheduleMaintenance: (id, lastMaintenance, nextMaintenance, callback) => {
         const sql = 'UPDATE equipment SET last_maintenance = ?, next_maintenance = ? WHERE id = ?';
@@ -36,38 +42,26 @@ const Equipment = {
         const sql = 'SELECT * FROM equipment WHERE next_maintenance <= CURDATE()';
         db.query(sql, callback);
     },
+
     // Get all maintenance schedules
     getAllMaintenance: (callback) => {
         const sql = 'SELECT id, name, last_maintenance, next_maintenance FROM equipment';
         db.query(sql, callback);
     },
-    
-    // Get all equipment due for maintenance
-    getDueForMaintenance: (callback) => {
-        const sql = `
-            SELECT e.id, e.name, e.lab, e.next_maintenance 
-            FROM equipment e
-            WHERE e.next_maintenance <= CURDATE()
-        `;
-        db.query(sql, callback);
-    },
 
     // Log maintenance reminder into the reminders table
-    logMaintenanceReminder: (equipmentId, callback) => {
-        const sql = 'INSERT INTO maintenance_reminders (equipment_id) VALUES (?)';
-        db.query(sql, [equipmentId], callback);
+    logMaintenanceReminder: (equipmentId, reminderDate, callback) => {
+        const sql = 'INSERT INTO maintenance_reminders (equipment_id, reminder_date) VALUES (?, ?)';
+        db.query(sql, [equipmentId, reminderDate], callback);
     },
 
+    // Get maintenance details by equipment ID
     getMaintenanceById: (id, callback) => {
-        // ✅ Convert ID to a number
         const equipmentId = Number(id);
-    
-        // ✅ Validate the ID properly
         if (isNaN(equipmentId) || equipmentId <= 0) {
-            console.error("Invalid equipment ID:", id);
             return callback(new Error("Invalid equipment ID"), null);
         }
-    
+        
         const sql = `
             SELECT 
                 e.id AS equipment_id, 
@@ -84,24 +78,15 @@ const Equipment = {
             ORDER BY mr.reminder_date DESC;
         `;
     
-        // ✅ Execute the query with the correctly formatted ID
         db.query(sql, [equipmentId], (err, results) => {
-            if (err) {
-                console.error("Database error:", err);
-                return callback(err, null);
-            }
-    
-            // ✅ Handle empty results correctly
+            if (err) return callback(err, null);
             if (!results || results.length === 0) {
-                console.log("No records found for equipment ID:", equipmentId);
                 return callback(null, { message: "No maintenance records found for this equipment" });
             }
-    
-            // ✅ Return the results
             callback(null, results);
         });
     },
-    
+
     // Get all maintenance reminders
     getAllReminders: (callback) => {
         const sql = `
@@ -116,15 +101,20 @@ const Equipment = {
             LEFT JOIN equipment e ON mr.equipment_id = e.id
             ORDER BY mr.reminder_date DESC;
         `;
-        db.query(sql, (err, results) => {
-            if (err) {
-                console.error("Database error:", err);
-                return callback(err, null);
-            }
-            callback(null, results);
-        });
+        db.query(sql, callback);
+    },
+
+    // Update maintenance reminder status
+    updateReminderStatus: (reminderId, status, callback) => {
+        const sql = 'UPDATE maintenance_reminders SET status = ? WHERE id = ?';
+        db.query(sql, [status, reminderId], callback);
+    },
+
+    // Delete maintenance reminder
+    deleteReminder: (reminderId, callback) => {
+        const sql = 'DELETE FROM maintenance_reminders WHERE id = ?';
+        db.query(sql, [reminderId], callback);
     }
-   
 };
 
 module.exports = Equipment;
